@@ -1,5 +1,8 @@
 # Banking REST API
 
+Banking REST API — A production-grade banking backend built with Java 17, Spring Boot, Spring Data JPA, and MySQL, supporting customer management, account operations, and financial transactions (deposit, withdraw, transfer).
+Follows a clean 4-layer architecture (Controller → Service → Repository → Database) with Swagger API documentation, proper HTTP status codes, input validation, and @Transactional safety for all money operations.
+
 A production-grade Banking REST API built with Spring Boot, JPA, MySQL and Swagger.
 
 ## Tech Stack
