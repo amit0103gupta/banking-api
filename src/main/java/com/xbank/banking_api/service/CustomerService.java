@@ -1,10 +1,10 @@
 package com.xbank.banking_api.service;
 
+import com.xbank.banking_api.exception.DuplicateResourceException;
+import com.xbank.banking_api.exception.ResourceNotFoundException;
 import com.xbank.banking_api.model.Customer;
 import com.xbank.banking_api.repository.CustomerRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @Service
@@ -18,9 +18,8 @@ public class CustomerService {
 
     public Customer createCustomer(Customer customer) {
         if (customerRepository.existsByEmail(customer.getEmail())) {
-            throw new ResponseStatusException(
-                HttpStatus.CONFLICT, "Email already exists: " + customer.getEmail()
-            );
+            throw new DuplicateResourceException(
+                "Email already exists: " + customer.getEmail());
         }
         return customerRepository.save(customer);
     }
@@ -31,7 +30,7 @@ public class CustomerService {
 
     public Customer getCustomerById(Long id) {
         return customerRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Customer not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Customer not found with id: " + id));
     }
 }
