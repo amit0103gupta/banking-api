@@ -109,10 +109,16 @@ public class TransactionService {
         return account;
     }
 
+    private static final BigDecimal MAX_TRANSACTION_AMOUNT = new BigDecimal("1000000");
+
     private void validateAmount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST, "Amount must be greater than zero");
+        }
+        if (amount.compareTo(MAX_TRANSACTION_AMOUNT) > 0) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST, "Amount exceeds maximum transaction limit");
         }
     }
 }
