@@ -1,12 +1,11 @@
 package com.xbank.banking_api.service;
 
+import com.xbank.banking_api.exception.ResourceNotFoundException;
 import com.xbank.banking_api.model.Account;
 import com.xbank.banking_api.model.Customer;
 import com.xbank.banking_api.repository.AccountRepository;
 import com.xbank.banking_api.repository.CustomerRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Random;
@@ -25,8 +24,7 @@ public class AccountService {
 
     public Account openAccount(Long customerId, Account.AccountType accountType) {
         Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Customer not found with id: " + customerId));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
         Account account = new Account();
         account.setCustomer(customer);
@@ -38,8 +36,7 @@ public class AccountService {
 
     public Account getAccountByNumber(String accountNumber) {
         return accountRepository.findByAccountNumber(accountNumber)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Account not found: " + accountNumber));
+                .orElseThrow(() -> new ResourceNotFoundException("Account", accountNumber));
     }
 
     public List<Account> getAccountsByCustomer(Long customerId) {
