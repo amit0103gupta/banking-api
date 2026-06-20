@@ -8,8 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.util.List;
-import java.util.Random;
 
 @Service
 public class AccountService {
@@ -50,10 +50,12 @@ public class AccountService {
         return getAccountByNumber(accountNumber).getBalance();
     }
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private String generateAccountNumber() {
         String number;
         do {
-            number = "SAN" + (100000000 + new Random().nextInt(900000000));
+            number = "SAN" + (100000000 + SECURE_RANDOM.nextInt(900000000));
         } while (accountRepository.existsByAccountNumber(number));
         return number;
     }
