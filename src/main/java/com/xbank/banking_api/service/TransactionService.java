@@ -1,13 +1,14 @@
 package com.xbank.banking_api.service;
 
+import com.xbank.banking_api.exception.InsufficientBalanceException;
+import com.xbank.banking_api.exception.InvalidOperationException;
+import com.xbank.banking_api.exception.ResourceNotFoundException;
 import com.xbank.banking_api.model.Account;
 import com.xbank.banking_api.model.Transaction;
 import com.xbank.banking_api.repository.AccountRepository;
 import com.xbank.banking_api.repository.TransactionRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -46,8 +47,8 @@ public class TransactionService {
         Account account = getActiveAccount(accountNumber);
 
         if (account.getBalance().compareTo(amount) < 0) {
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST, "Insufficient balance");
+            throw new InsufficientBalanceException(
+                "Insufficient balance in account: " + accountNumber);
         }
 
         account.setBalance(account.getBalance().subtract(amount));
@@ -67,16 +68,16 @@ public class TransactionService {
         validateAmount(amount);
 
         if (fromAccountNumber.equals(toAccountNumber)) {
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST, "Cannot transfer to the same account");
+            throw new InvalidOperationException(
+                "Cannot transfer to the same account: " + fromAccountNumber);
         }
 
         Account fromAccount = getActiveAccount(fromAccountNumber);
         Account toAccount   = getActiveAccount(toAccountNumber);
 
         if (fromAccount.getBalance().compareTo(amount) < 0) {
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST, "Insufficient balance");
+            throw new InsufficientBalanceException(
+                "Insufficient balance in account: " + fromAccountNumber);
         }
 
         fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
@@ -94,25 +95,29 @@ public class TransactionService {
     }
 
     public List<Transaction> getTransactionHistory(String accountNumber) {
+        if (!accountRepository.existsByAccountNumber(accountNumber)) {
+            throw new ResourceNotFoundException(
+                    "Account not found: " + accountNumber);
+        }
         return transactionRepository.findAllByAccountNumber(accountNumber);
     }
 
     private Account getActiveAccount(String accountNumber) {
         Account account = accountRepository.findByAccountNumber(accountNumber)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Account not found: " + accountNumber));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Account not found: " + accountNumber));
 
         if (account.getStatus() != Account.AccountStatus.ACTIVE) {
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST, "Account is not active: " + accountNumber);
+            throw new InvalidOperationException(
+                "Account is not active: " + accountNumber);
         }
         return account;
     }
 
     private void validateAmount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST, "Amount must be greater than zero");
+            throw new InvalidOperationException(
+                "Amount must be greater than zero");
         }
     }
 }
